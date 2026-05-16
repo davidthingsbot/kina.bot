@@ -3,10 +3,12 @@ import slides from './slides.json'
 
 const PRELOAD_AHEAD = 4
 const IDLE_MS = 1800
+const AUTO_ADVANCE_MS = 3000
 
 export function App() {
   const [index, setIndex] = useState(0)
   const [showControls, setShowControls] = useState(true)
+  const [autoAdvance, setAutoAdvance] = useState(true)
   const idleTimer = useRef(null)
 
   const total = slides.length
@@ -19,6 +21,7 @@ export function App() {
   )
   const home = useCallback(() => setIndex(0), [])
   const end = useCallback(() => setIndex(Math.max(total - 1, 0)), [total])
+  const stopAuto = useCallback(() => setAutoAdvance(false), [])
 
   useEffect(() => {
     const onKey = (e) => {
@@ -27,11 +30,18 @@ export function App() {
       else if (e.key === 'Home') home()
       else if (e.key === 'End') end()
       else return
+      stopAuto()
       e.preventDefault()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [go, home, end])
+  }, [go, home, end, stopAuto])
+
+  useEffect(() => {
+    if (!autoAdvance) return
+    const id = setInterval(() => go(1), AUTO_ADVANCE_MS)
+    return () => clearInterval(id)
+  }, [autoAdvance, go])
 
   useEffect(() => {
     for (let k = 1; k <= PRELOAD_AHEAD; k++) {
@@ -73,7 +83,10 @@ export function App() {
   return (
     <div
       class="fixed inset-0 grid cursor-pointer place-items-center select-none overflow-hidden bg-white"
-      onClick={() => go(1)}
+      onClick={() => {
+        stopAuto()
+        go(1)
+      }}
     >
       <img
         src={slideUrl(index)}
@@ -93,6 +106,7 @@ export function App() {
             disabled={index === 0}
             onClick={(e) => {
               e.stopPropagation()
+              stopAuto()
               go(-1)
             }}
           >
@@ -103,6 +117,7 @@ export function App() {
             disabled={index === 0}
             onClick={(e) => {
               e.stopPropagation()
+              stopAuto()
               home()
             }}
           >
@@ -113,6 +128,7 @@ export function App() {
             disabled={index === total - 1}
             onClick={(e) => {
               e.stopPropagation()
+              stopAuto()
               go(1)
             }}
           >
