@@ -1,9 +1,22 @@
 import { useState, useEffect, useCallback, useRef } from 'preact/hooks'
 import slides from './slides.json'
+import durations from './slide-durations.json'
 
 const PRELOAD_AHEAD = 4
 const IDLE_MS = 1800
-const AUTO_ADVANCE_MS = 3000
+const DEFAULT_MS = durations._default ?? 3000
+
+const slideNumber = (filename) => {
+  const m = String(filename).match(/(\d+)(?=\.[^.]+$)/)
+  return m ? parseInt(m[1], 10) : null
+}
+const durationFor = (filename) => {
+  const n = slideNumber(filename)
+  if (n == null) return DEFAULT_MS
+  return (
+    durations[n] ?? durations[String(n).padStart(2, '0')] ?? DEFAULT_MS
+  )
+}
 
 export function App() {
   const [index, setIndex] = useState(0)
@@ -39,9 +52,9 @@ export function App() {
 
   useEffect(() => {
     if (!autoAdvance) return
-    const id = setInterval(() => go(1), AUTO_ADVANCE_MS)
-    return () => clearInterval(id)
-  }, [autoAdvance, go])
+    const id = setTimeout(() => go(1), durationFor(slides[index]))
+    return () => clearTimeout(id)
+  }, [autoAdvance, index, go])
 
   useEffect(() => {
     for (let k = 1; k <= PRELOAD_AHEAD; k++) {
