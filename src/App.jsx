@@ -59,6 +59,17 @@ export function App() {
   }, [started, go, home, end, stopAuto])
 
   useEffect(() => {
+    if (started) return
+    const onKey = (e) => {
+      if (e.key !== 'ArrowRight') return
+      setStarted(true)
+      e.preventDefault()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [started])
+
+  useEffect(() => {
     if (!started || !autoAdvance) return
     const id = setTimeout(() => go(1), durationFor(slides[index]))
     return () => clearTimeout(id)
@@ -180,52 +191,49 @@ function Cover({ base, onStart }) {
         class="absolute inset-x-0 flex justify-center"
         style={{ bottom: 'calc(6% + 60px)' }}
       >
-        <div
-          class="grid items-start gap-y-6"
-          style={{
-            gridTemplateColumns: '300px 16px 360px 40px 360px 40px 360px',
-          }}
-        >
-          <p class="col-start-1 row-start-1 text-[15px] font-bold leading-snug text-black">
+        <div>
+          <p class="mb-8 text-[20px] font-bold leading-snug whitespace-nowrap text-black">
             Agents don't need better prompts.
             <br />
-            They need a place.
+            They need a better place.
           </p>
-          <button
-            type="button"
-            onClick={onStart}
-            class="col-start-1 row-start-2 inline-flex h-[60px] w-fit items-center gap-2 rounded-[8px] px-5 text-[15px] font-bold text-white transition hover:brightness-95"
-            style={{ background: KINA_GREEN }}
-          >
-            <span>Learn more</span>
-            <CarbonChevronRight />
-          </button>
-          <p
-            class="col-start-3 row-start-2 text-[17px] leading-[1.55]"
-            style={{ color: KINA_GREEN_DARK }}
-          >
-            Kina is a shared workspace where you and your AI agents work side
-            by side.
-          </p>
-          <p
-            class="col-start-5 row-start-2 text-[17px] leading-[1.55]"
-            style={{ color: KINA_GREEN_DARK }}
-          >
-            Everything is visible and interactive on a spatial canvas. Everyone
-            sees the same things, can interact with them, watch each other
-            work, and write code together.
-          </p>
-          <p
-            class="col-start-7 row-start-2 text-[17px] leading-[1.55]"
-            style={{ color: KINA_GREEN_DARK }}
-          >
-            Work doesn't disappear into Markdown files or chat transcripts. It
-            lives as typed objects like a contact, a note, a todo, or a map
-            location. You compose them into activities, the replacement for
-            apps. Each activity is a living arrangement of interconnected
-            objects and agents that grows with you. Share an activity and a
-            collaborator lands inside it.
-          </p>
+          <div class="flex items-start">
+            <button
+              type="button"
+              onClick={onStart}
+              class="inline-flex h-[60px] shrink-0 items-center gap-2 rounded-[8px] px-5 text-[15px] font-bold text-white transition hover:brightness-95"
+              style={{ background: KINA_GREEN }}
+            >
+              <span>Learn more</span>
+              <CarbonChevronRight />
+            </button>
+            <p
+              class="ml-6 w-[360px] text-[17px] leading-[1.55]"
+              style={{ color: KINA_GREEN_DARK }}
+            >
+              Kina is a shared workspace where you and your AI agents work
+              side by side.
+            </p>
+            <p
+              class="ml-10 w-[360px] text-[17px] leading-[1.55]"
+              style={{ color: KINA_GREEN_DARK }}
+            >
+              Everything is visible and interactive on a spatial canvas.
+              Everyone sees the same things, can interact with them, watch each
+              other work, and write code together.
+            </p>
+            <p
+              class="ml-10 w-[360px] text-[17px] leading-[1.55]"
+              style={{ color: KINA_GREEN_DARK }}
+            >
+              Work doesn't disappear into Markdown files or chat transcripts.
+              It lives as typed objects like a contact, a note, a todo, or a
+              map location. You compose them into activities, the replacement
+              for apps. Each activity is a living arrangement of interconnected
+              objects and agents that grows with you. Share an activity and a
+              collaborator lands inside it.
+            </p>
+          </div>
         </div>
       </div>
     </div>
