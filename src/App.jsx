@@ -7,7 +7,8 @@ const IDLE_MS = 1800
 const DEFAULT_MS = durations._default ?? 3000
 const KINA_GREEN = '#89bd01'
 const KINA_GREEN_DARK = '#5e8101'
-const HEADER_TEXT = 'Chat is the DOS of AI. Kina is the GUI.'
+const HEADER_TEXT =
+  'Visual collaborative canvases and information spaces for people and agents.'
 
 const slideNumber = (filename) => {
   const m = String(filename).match(/(\d+)(?=\.[^.]+$)/)
@@ -122,38 +123,36 @@ export function App() {
   }, [started])
 
   return (
-    <div class="fixed inset-0 flex flex-col bg-white">
+    <div class="flex min-h-screen flex-col bg-white">
       <Header started={started} onReset={reset} />
-      <div class="relative flex-1 overflow-hidden">
-        {total === 0 ? (
-          <EmptyState />
-        ) : !started ? (
-          <Cover base={base} onStart={() => setStarted(true)} />
-        ) : (
-          <Viewer
-            index={index}
-            total={total}
-            slideUrl={slideUrl}
-            showControls={showControls}
-            onAdvance={() => {
-              stopAuto()
-              advance()
-            }}
-            onPrev={() => {
-              stopAuto()
-              retreat()
-            }}
-            onHome={() => {
-              stopAuto()
-              home()
-            }}
-            onNext={() => {
-              stopAuto()
-              advance()
-            }}
-          />
-        )}
-      </div>
+      {total === 0 ? (
+        <EmptyState />
+      ) : !started ? (
+        <Cover base={base} onStart={() => setStarted(true)} />
+      ) : (
+        <Viewer
+          index={index}
+          total={total}
+          slideUrl={slideUrl}
+          showControls={showControls}
+          onAdvance={() => {
+            stopAuto()
+            advance()
+          }}
+          onPrev={() => {
+            stopAuto()
+            retreat()
+          }}
+          onHome={() => {
+            stopAuto()
+            home()
+          }}
+          onNext={() => {
+            stopAuto()
+            advance()
+          }}
+        />
+      )}
       <Footer started={started} />
     </div>
   )
@@ -177,12 +176,15 @@ function Footer({ started }) {
 function Header({ started, onReset }) {
   const base = import.meta.env.BASE_URL
   return (
-    <header class="relative flex h-[60px] shrink-0 items-center bg-black text-white">
+    <header
+      class="sticky top-0 z-10 grid h-[60px] shrink-0 items-center bg-black text-white"
+      style={{ gridTemplateColumns: 'auto 1fr auto' }}
+    >
       <button
         type="button"
         onClick={onReset}
         aria-label="Back to cover"
-        class="ml-6 cursor-pointer"
+        class="ml-6 cursor-pointer outline-none focus:outline-none focus-visible:outline-none"
       >
         <img
           src={`${base}icons/kina-wordmark.svg`}
@@ -192,11 +194,17 @@ function Header({ started, onReset }) {
           draggable={false}
         />
       </button>
-      {!started && (
-        <div class="pointer-events-none absolute inset-0 flex items-center justify-end pr-6">
-          <span class="text-lg font-medium tracking-tight">{HEADER_TEXT}</span>
-        </div>
-      )}
+      <div class="px-6 text-center">
+        {!started && (
+          <span class="text-lg font-normal tracking-tight">{HEADER_TEXT}</span>
+        )}
+      </div>
+      <a
+        href="mailto:info@kina.bot?subject=I%27m%20interested%20in%20Kina.bot%20because..."
+        class="mr-6 rounded-full bg-white px-4 py-1.5 text-sm font-medium text-black transition hover:bg-neutral-100"
+      >
+        Contact
+      </a>
     </header>
   )
 }
@@ -217,7 +225,7 @@ function EmptyState() {
 
 function Cover({ base, onStart }) {
   return (
-    <div class="flex h-full w-full flex-col overflow-y-auto">
+    <div class="flex w-full flex-col">
       <img
         src={`${base}kina-pitch-cover.png`}
         alt="Kina cover"
@@ -288,7 +296,7 @@ function Viewer({
 }) {
   return (
     <div
-      class="grid h-full w-full cursor-pointer place-items-center overflow-hidden bg-white select-none"
+      class="relative grid w-full flex-1 cursor-pointer place-items-center overflow-hidden bg-white select-none"
       onClick={onAdvance}
     >
       <img
