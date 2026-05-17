@@ -42,12 +42,22 @@ export function App() {
     setIndex(0)
     setAutoAdvance(true)
   }, [])
+  const advance = useCallback(() => {
+    setIndex((i) => {
+      if (i >= total - 1) {
+        setStarted(false)
+        setAutoAdvance(true)
+        return 0
+      }
+      return i + 1
+    })
+  }, [total])
 
   useEffect(() => {
     if (!started) return
     const onKey = (e) => {
       if (e.key === 'ArrowLeft') go(-1)
-      else if (e.key === 'ArrowRight' || e.key === ' ') go(1)
+      else if (e.key === 'ArrowRight' || e.key === ' ') advance()
       else if (e.key === 'Home') home()
       else if (e.key === 'End') end()
       else return
@@ -56,24 +66,29 @@ export function App() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [started, go, home, end, stopAuto])
+  }, [started, go, advance, home, end, stopAuto])
 
   useEffect(() => {
     if (started) return
     const onKey = (e) => {
-      if (e.key !== 'ArrowRight') return
-      setStarted(true)
+      if (e.key === 'ArrowRight') {
+        setStarted(true)
+      } else if (e.key === 'ArrowLeft') {
+        setIndex(Math.max(total - 1, 0))
+        setAutoAdvance(false)
+        setStarted(true)
+      } else return
       e.preventDefault()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [started])
+  }, [started, total])
 
   useEffect(() => {
     if (!started || !autoAdvance) return
-    const id = setTimeout(() => go(1), durationFor(slides[index]))
+    const id = setTimeout(() => advance(), durationFor(slides[index]))
     return () => clearTimeout(id)
-  }, [started, autoAdvance, index, go])
+  }, [started, autoAdvance, index, advance])
 
   useEffect(() => {
     if (!started) return
@@ -116,7 +131,7 @@ export function App() {
             showControls={showControls}
             onAdvance={() => {
               stopAuto()
-              go(1)
+              advance()
             }}
             onPrev={() => {
               stopAuto()
@@ -128,7 +143,7 @@ export function App() {
             }}
             onNext={() => {
               stopAuto()
-              go(1)
+              advance()
             }}
           />
         )}
@@ -180,17 +195,14 @@ function EmptyState() {
 
 function Cover({ base, onStart }) {
   return (
-    <div class="relative h-full w-full overflow-hidden">
+    <div class="flex h-full w-full flex-col overflow-hidden">
       <img
         src={`${base}kina-pitch-cover.png`}
         alt="Kina cover"
-        class="absolute inset-0 h-full w-full object-contain"
+        class="block w-full"
         draggable={false}
       />
-      <div
-        class="absolute inset-x-0 flex justify-center"
-        style={{ bottom: 'calc(6% + 60px)' }}
-      >
+      <div class="flex justify-center pt-10">
         <div>
           <p class="mb-8 text-[20px] font-bold leading-snug whitespace-nowrap text-black">
             Agents don't need better prompts.
@@ -208,7 +220,7 @@ function Cover({ base, onStart }) {
               <CarbonChevronRight />
             </button>
             <p
-              class="ml-6 w-[360px] text-[17px] leading-[1.55]"
+              class="ml-12 w-[360px] text-[17px] leading-[1.55]"
               style={{ color: KINA_GREEN_DARK }}
             >
               Kina is a shared workspace where you and your AI agents work
@@ -290,7 +302,6 @@ function Viewer({
           </CtlButton>
           <CtlButton
             label="Next slide"
-            disabled={index === total - 1}
             onClick={(e) => {
               e.stopPropagation()
               onNext()
