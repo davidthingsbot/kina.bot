@@ -30,10 +30,6 @@ export function App() {
   const base = import.meta.env.BASE_URL
   const slideUrl = (i) => `${base}slides/${slides[i]}`
 
-  const go = useCallback(
-    (delta) => setIndex((i) => Math.min(Math.max(i + delta, 0), total - 1)),
-    [total],
-  )
   const home = useCallback(() => setIndex(0), [])
   const end = useCallback(() => setIndex(Math.max(total - 1, 0)), [total])
   const stopAuto = useCallback(() => setAutoAdvance(false), [])
@@ -52,11 +48,21 @@ export function App() {
       return i + 1
     })
   }, [total])
+  const retreat = useCallback(() => {
+    setIndex((i) => {
+      if (i <= 0) {
+        setStarted(false)
+        setAutoAdvance(true)
+        return 0
+      }
+      return i - 1
+    })
+  }, [])
 
   useEffect(() => {
     if (!started) return
     const onKey = (e) => {
-      if (e.key === 'ArrowLeft') go(-1)
+      if (e.key === 'ArrowLeft') retreat()
       else if (e.key === 'ArrowRight' || e.key === ' ') advance()
       else if (e.key === 'Home') home()
       else if (e.key === 'End') end()
@@ -66,7 +72,7 @@ export function App() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [started, go, advance, home, end, stopAuto])
+  }, [started, retreat, advance, home, end, stopAuto])
 
   useEffect(() => {
     if (started) return
@@ -135,7 +141,7 @@ export function App() {
             }}
             onPrev={() => {
               stopAuto()
-              go(-1)
+              retreat()
             }}
             onHome={() => {
               stopAuto()
@@ -148,7 +154,16 @@ export function App() {
           />
         )}
       </div>
+      <Footer />
     </div>
+  )
+}
+
+function Footer() {
+  return (
+    <footer class="flex h-[40px] shrink-0 items-center pl-6 text-sm text-neutral-300">
+      © 2026 kina.bot
+    </footer>
   )
 }
 
@@ -171,8 +186,8 @@ function Header({ started, onReset }) {
         />
       </button>
       {!started && (
-        <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <span class="text-lg font-bold tracking-tight">{HEADER_TEXT}</span>
+        <div class="pointer-events-none absolute inset-0 flex items-center justify-end pr-6">
+          <span class="text-lg font-medium tracking-tight">{HEADER_TEXT}</span>
         </div>
       )}
     </header>
@@ -195,39 +210,42 @@ function EmptyState() {
 
 function Cover({ base, onStart }) {
   return (
-    <div class="flex h-full w-full flex-col overflow-hidden">
+    <div class="flex h-full w-full flex-col overflow-y-auto">
       <img
         src={`${base}kina-pitch-cover.png`}
         alt="Kina cover"
         class="block w-full"
         draggable={false}
       />
-      <div class="flex justify-center pt-10">
-        <div>
-          <p class="mb-8 text-[20px] font-bold leading-snug whitespace-nowrap text-black">
+      <div class="flex justify-center px-[5%] pt-10 pb-[250px]">
+        <div class="w-full max-w-[1500px]">
+          <p class="mb-8 text-[20px] font-bold leading-snug text-black">
             Agents don't need better prompts.
             <br />
             They need a better place.
           </p>
-          <div class="flex items-start">
+          <div
+            class="grid items-start gap-x-10"
+            style={{ gridTemplateColumns: 'auto repeat(3, minmax(0, 1fr))' }}
+          >
             <button
               type="button"
               onClick={onStart}
-              class="inline-flex h-[60px] shrink-0 items-center gap-2 rounded-[8px] px-5 text-[15px] font-bold text-white transition hover:brightness-95"
+              class="inline-flex h-[60px] shrink-0 items-center gap-2 rounded-[8px] px-5 text-[18px] font-bold text-white transition hover:brightness-95"
               style={{ background: KINA_GREEN }}
             >
               <span>Learn more</span>
               <CarbonChevronRight />
             </button>
             <p
-              class="ml-12 w-[360px] text-[17px] leading-[1.55]"
+              class="text-[17px] leading-[1.55]"
               style={{ color: KINA_GREEN_DARK }}
             >
               Kina is a shared workspace where you and your AI agents work
               side by side.
             </p>
             <p
-              class="ml-10 w-[360px] text-[17px] leading-[1.55]"
+              class="text-[17px] leading-[1.55]"
               style={{ color: KINA_GREEN_DARK }}
             >
               Everything is visible and interactive on a spatial canvas.
@@ -235,7 +253,7 @@ function Cover({ base, onStart }) {
               other work, and write code together.
             </p>
             <p
-              class="ml-10 w-[360px] text-[17px] leading-[1.55]"
+              class="text-[17px] leading-[1.55]"
               style={{ color: KINA_GREEN_DARK }}
             >
               Work doesn't disappear into Markdown files or chat transcripts.
@@ -282,7 +300,6 @@ function Viewer({
         <div class="pointer-events-auto flex items-center gap-1 rounded-full bg-white/85 px-2 py-1.5 shadow-md ring-1 ring-neutral-200 backdrop-blur">
           <CtlButton
             label="Previous slide"
-            disabled={index === 0}
             onClick={(e) => {
               e.stopPropagation()
               onPrev()
