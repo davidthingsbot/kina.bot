@@ -263,12 +263,11 @@ function Cover({ base, onStart }) {
               class="text-[17px] leading-[1.55]"
               style={{ color: KINA_GREEN_DARK }}
             >
-              Work doesn't disappear into Markdown files or chat transcripts.
+              Work doesn't disappear into markdown files or chat transcripts.
               It lives as typed objects like a contact, a note, a todo, or a
               map location. You compose them into activities, the replacement
               for apps. Each activity is a living arrangement of interconnected
-              objects and agents that grows with you. Share an activity and a
-              collaborator lands inside it.
+              objects and agents that grows with you.
             </p>
           </div>
         </div>
