@@ -5,6 +5,9 @@ import durations from './slide-durations.json'
 const PRELOAD_AHEAD = 4
 const IDLE_MS = 1800
 const DEFAULT_MS = durations._default ?? 3000
+const KINA_GREEN = '#89bd01'
+const KINA_GREEN_DARK = '#5e8101'
+const HEADER_TEXT = 'Chat is the DOS of AI. Kina is the GUI.'
 
 const slideNumber = (filename) => {
   const m = String(filename).match(/(\d+)(?=\.[^.]+$)/)
@@ -13,12 +16,11 @@ const slideNumber = (filename) => {
 const durationFor = (filename) => {
   const n = slideNumber(filename)
   if (n == null) return DEFAULT_MS
-  return (
-    durations[n] ?? durations[String(n).padStart(2, '0')] ?? DEFAULT_MS
-  )
+  return durations[n] ?? durations[String(n).padStart(2, '0')] ?? DEFAULT_MS
 }
 
 export function App() {
+  const [started, setStarted] = useState(false)
   const [index, setIndex] = useState(0)
   const [showControls, setShowControls] = useState(true)
   const [autoAdvance, setAutoAdvance] = useState(true)
@@ -35,8 +37,14 @@ export function App() {
   const home = useCallback(() => setIndex(0), [])
   const end = useCallback(() => setIndex(Math.max(total - 1, 0)), [total])
   const stopAuto = useCallback(() => setAutoAdvance(false), [])
+  const reset = useCallback(() => {
+    setStarted(false)
+    setIndex(0)
+    setAutoAdvance(true)
+  }, [])
 
   useEffect(() => {
+    if (!started) return
     const onKey = (e) => {
       if (e.key === 'ArrowLeft') go(-1)
       else if (e.key === 'ArrowRight' || e.key === ' ') go(1)
@@ -48,24 +56,26 @@ export function App() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [go, home, end, stopAuto])
+  }, [started, go, home, end, stopAuto])
 
   useEffect(() => {
-    if (!autoAdvance) return
+    if (!started || !autoAdvance) return
     const id = setTimeout(() => go(1), durationFor(slides[index]))
     return () => clearTimeout(id)
-  }, [autoAdvance, index, go])
+  }, [started, autoAdvance, index, go])
 
   useEffect(() => {
+    if (!started) return
     for (let k = 1; k <= PRELOAD_AHEAD; k++) {
       const j = index + k
       if (j >= total) break
       const img = new Image()
       img.src = slideUrl(j)
     }
-  }, [index, total])
+  }, [started, index, total])
 
   useEffect(() => {
+    if (!started) return
     const bump = () => {
       setShowControls(true)
       clearTimeout(idleTimer.current)
@@ -77,29 +87,165 @@ export function App() {
       window.removeEventListener('mousemove', bump)
       clearTimeout(idleTimer.current)
     }
-  }, [])
-
-  if (total === 0) {
-    return (
-      <div class="fixed inset-0 grid place-items-center bg-white text-neutral-400">
-        <p>
-          No slides yet. Drop PNG files into{' '}
-          <code class="rounded bg-neutral-100 px-1 py-0.5 text-neutral-600">
-            public/slides/
-          </code>
-          .
-        </p>
-      </div>
-    )
-  }
+  }, [started])
 
   return (
+    <div class="fixed inset-0 flex flex-col bg-white">
+      <Header started={started} onReset={reset} />
+      <div class="relative flex-1 overflow-hidden">
+        {total === 0 ? (
+          <EmptyState />
+        ) : !started ? (
+          <Cover base={base} onStart={() => setStarted(true)} />
+        ) : (
+          <Viewer
+            index={index}
+            total={total}
+            slideUrl={slideUrl}
+            showControls={showControls}
+            onAdvance={() => {
+              stopAuto()
+              go(1)
+            }}
+            onPrev={() => {
+              stopAuto()
+              go(-1)
+            }}
+            onHome={() => {
+              stopAuto()
+              home()
+            }}
+            onNext={() => {
+              stopAuto()
+              go(1)
+            }}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
+function Header({ started, onReset }) {
+  const base = import.meta.env.BASE_URL
+  return (
+    <header class="relative flex h-[60px] shrink-0 items-center bg-black text-white">
+      <button
+        type="button"
+        onClick={onReset}
+        aria-label="Back to cover"
+        class="ml-6 cursor-pointer"
+      >
+        <img
+          src={`${base}icons/kina-wordmark.svg`}
+          alt="Kina"
+          class="h-10 w-auto"
+          style={{ filter: 'brightness(0) invert(1)' }}
+          draggable={false}
+        />
+      </button>
+      {!started && (
+        <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <span class="text-lg font-bold tracking-tight">{HEADER_TEXT}</span>
+        </div>
+      )}
+    </header>
+  )
+}
+
+function EmptyState() {
+  return (
+    <div class="grid h-full place-items-center text-neutral-400">
+      <p>
+        No slides yet. Drop PNG files into{' '}
+        <code class="rounded bg-neutral-100 px-1 py-0.5 text-neutral-600">
+          public/slides/
+        </code>
+        .
+      </p>
+    </div>
+  )
+}
+
+function Cover({ base, onStart }) {
+  return (
+    <div class="relative h-full w-full overflow-hidden">
+      <img
+        src={`${base}kina-pitch-cover.png`}
+        alt="Kina cover"
+        class="absolute inset-0 h-full w-full object-contain"
+        draggable={false}
+      />
+      <div
+        class="absolute inset-x-0 flex justify-center"
+        style={{ bottom: 'calc(6% + 60px)' }}
+      >
+        <div
+          class="grid items-start gap-y-6"
+          style={{
+            gridTemplateColumns: '300px 16px 360px 40px 360px 40px 360px',
+          }}
+        >
+          <p class="col-start-1 row-start-1 text-[15px] font-bold leading-snug text-black">
+            Agents don't need better prompts.
+            <br />
+            They need a place.
+          </p>
+          <button
+            type="button"
+            onClick={onStart}
+            class="col-start-1 row-start-2 inline-flex h-[60px] w-fit items-center gap-2 rounded-[8px] px-5 text-[15px] font-bold text-white transition hover:brightness-95"
+            style={{ background: KINA_GREEN }}
+          >
+            <span>Learn more</span>
+            <CarbonChevronRight />
+          </button>
+          <p
+            class="col-start-3 row-start-2 text-[17px] leading-[1.55]"
+            style={{ color: KINA_GREEN_DARK }}
+          >
+            Kina is a shared workspace where you and your AI agents work side
+            by side.
+          </p>
+          <p
+            class="col-start-5 row-start-2 text-[17px] leading-[1.55]"
+            style={{ color: KINA_GREEN_DARK }}
+          >
+            Everything is visible and interactive on a spatial canvas. Everyone
+            sees the same things, can interact with them, watch each other
+            work, and write code together.
+          </p>
+          <p
+            class="col-start-7 row-start-2 text-[17px] leading-[1.55]"
+            style={{ color: KINA_GREEN_DARK }}
+          >
+            Work doesn't disappear into Markdown files or chat transcripts. It
+            lives as typed objects like a contact, a note, a todo, or a map
+            location. You compose them into activities, the replacement for
+            apps. Each activity is a living arrangement of interconnected
+            objects and agents that grows with you. Share an activity and a
+            collaborator lands inside it.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Viewer({
+  index,
+  total,
+  slideUrl,
+  showControls,
+  onAdvance,
+  onPrev,
+  onHome,
+  onNext,
+}) {
+  return (
     <div
-      class="fixed inset-0 grid cursor-pointer place-items-center select-none overflow-hidden bg-white"
-      onClick={() => {
-        stopAuto()
-        go(1)
-      }}
+      class="grid h-full w-full cursor-pointer place-items-center overflow-hidden bg-white select-none"
+      onClick={onAdvance}
     >
       <img
         src={slideUrl(index)}
@@ -119,8 +265,7 @@ export function App() {
             disabled={index === 0}
             onClick={(e) => {
               e.stopPropagation()
-              stopAuto()
-              go(-1)
+              onPrev()
             }}
           >
             <ChevronLeft />
@@ -130,8 +275,7 @@ export function App() {
             disabled={index === 0}
             onClick={(e) => {
               e.stopPropagation()
-              stopAuto()
-              home()
+              onHome()
             }}
           >
             <HomeIcon />
@@ -141,8 +285,7 @@ export function App() {
             disabled={index === total - 1}
             onClick={(e) => {
               e.stopPropagation()
-              stopAuto()
-              go(1)
+              onNext()
             }}
           >
             <ChevronRight />
@@ -223,6 +366,20 @@ function HomeIcon() {
     >
       <path d="M3 12 12 3l9 9" />
       <path d="M5 10v10h14V10" />
+    </svg>
+  )
+}
+
+function CarbonChevronRight() {
+  return (
+    <svg
+      viewBox="0 0 32 32"
+      width="20"
+      height="20"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M22 16L12 26l-1.4-1.4 8.6-8.6-8.6-8.6L12 6z" />
     </svg>
   )
 }

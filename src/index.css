@@ -10,4 +10,5 @@ body,
 body {
   background: #fff;
   overscroll-behavior: none;
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
 }
