@@ -154,15 +154,22 @@ export function App() {
           />
         )}
       </div>
-      <Footer />
+      <Footer started={started} />
     </div>
   )
 }
 
-function Footer() {
+function Footer({ started }) {
   return (
-    <footer class="flex h-[40px] shrink-0 items-center pl-6 text-sm text-neutral-300">
-      © 2026 kina.bot
+    <footer class="flex h-[40px] shrink-0 items-center gap-3 pl-6 pr-6 text-sm text-neutral-300">
+      <span>© 2026 kina.bot</span>
+      {!started && (
+        <span>
+          Kina (Evechinus chloroticus) are the most common species of sea
+          urchin found in shallow coastal waters surrounding Aotearoa and its
+          offshore islands.
+        </span>
+      )}
     </footer>
   )
 }
