@@ -8,7 +8,7 @@ const DEFAULT_MS = durations._default ?? 3000
 const KINA_GREEN = '#89bd01'
 const KINA_GREEN_DARK = '#5e8101'
 const HEADER_TEXT =
-  'Visual collaborative canvases and information spaces for people and agents.'
+  'A visual collaborative canvas and information space for people and agents.'
 
 const slideNumber = (filename) => {
   const m = String(filename).match(/(\d+)(?=\.[^.]+$)/)
