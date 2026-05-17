@@ -8,7 +8,7 @@ const DEFAULT_MS = durations._default ?? 3000
 const KINA_GREEN = '#89bd01'
 const KINA_GREEN_DARK = '#5e8101'
 const HEADER_TEXT =
-  'Visual collaborative canvases and information spaces for people and agents.'
+  'A visual collaborative canvas and information space for people and agents.'
 
 const slideNumber = (filename) => {
   const m = String(filename).match(/(\d+)(?=\.[^.]+$)/)
@@ -200,7 +200,7 @@ function Header({ started, onReset }) {
         )}
       </div>
       <a
-        href="mailto:info@kina.bot?subject=I%27m%20interested%20in%20Kina.bot%20because..."
+        href="mailto:info@kina.bot?subject=I%27m%20interested%20in%20Kina%20because..."
         class="mr-6 rounded-full bg-white px-4 py-1.5 text-sm font-medium text-black transition hover:bg-neutral-100"
       >
         Contact
