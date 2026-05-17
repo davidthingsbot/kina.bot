@@ -229,7 +229,8 @@ function Cover({ base, onStart }) {
       <img
         src={`${base}kina-pitch-cover.png`}
         alt="Kina cover"
-        class="block w-full"
+        class="block w-full cursor-pointer"
+        onClick={onStart}
         draggable={false}
       />
       <div class="flex justify-center px-[5%] pt-10 pb-[250px]">
