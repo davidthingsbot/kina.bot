@@ -7,7 +7,7 @@ const IDLE_MS = 1800
 const DEFAULT_MS = durations._default ?? 3000
 const KINA_GREEN = '#89bd01'
 const KINA_GREEN_DARK = '#5e8101'
-const HEADER_TEXT =
+const TAGLINE =
   'A visual collaborative canvas and information space for people and agents.'
 
 const slideNumber = (filename) => {
@@ -160,7 +160,7 @@ export function App() {
 
 function Footer({ started }) {
   return (
-    <footer class="flex h-[40px] shrink-0 items-center gap-3 pl-6 pr-6 text-sm text-neutral-300">
+    <footer class="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 px-6 py-2 text-xs text-neutral-300 md:h-[40px] md:py-0 md:text-sm">
       <span>© 2026 kina.bot</span>
       {!started && (
         <span>
@@ -196,7 +196,9 @@ function Header({ started, onReset }) {
       </button>
       <div class="px-6 text-center">
         {!started && (
-          <span class="text-lg font-normal tracking-tight">{HEADER_TEXT}</span>
+          <span class="hidden text-lg font-normal tracking-tight md:inline-block">
+            {TAGLINE}
+          </span>
         )}
       </div>
       <a
@@ -226,6 +228,9 @@ function EmptyState() {
 function Cover({ base, onStart }) {
   return (
     <div class="flex w-full flex-col">
+      <p class="px-6 pt-8 pb-4 text-left text-lg font-normal tracking-tight text-black md:hidden">
+        {TAGLINE}
+      </p>
       <img
         src={`${base}kina-pitch-cover.png`}
         alt="Kina cover"
@@ -233,21 +238,18 @@ function Cover({ base, onStart }) {
         onClick={onStart}
         draggable={false}
       />
-      <div class="flex justify-center px-[5%] pt-10 pb-[250px]">
+      <div class="flex justify-center px-6 pt-10 pb-24 md:px-[5%] md:pb-[250px]">
         <div class="w-full max-w-[1500px]">
           <p class="mb-8 text-[20px] font-bold leading-snug text-black">
             Agents don't need better prompts.
             <br />
             They need a better place.
           </p>
-          <div
-            class="grid items-start gap-x-10"
-            style={{ gridTemplateColumns: 'auto repeat(3, minmax(0, 1fr))' }}
-          >
+          <div class="grid grid-cols-1 items-start gap-y-8 md:gap-x-10 md:[grid-template-columns:auto_repeat(3,minmax(0,1fr))]">
             <button
               type="button"
               onClick={onStart}
-              class="inline-flex h-[60px] shrink-0 items-center gap-2 rounded-[8px] px-5 text-[18px] font-bold text-white transition hover:brightness-95"
+              class="inline-flex h-[60px] shrink-0 items-center gap-2 justify-self-start rounded-[8px] px-5 text-[18px] font-bold text-white transition hover:brightness-95"
               style={{ background: KINA_GREEN }}
             >
               <span>Learn more</span>
